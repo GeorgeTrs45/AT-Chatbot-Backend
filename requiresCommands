@@ -1,0 +1,8 @@
+pip install langchain_community
+pip install pypdf
+pip install -qU langchain-openai
+pip install langchain_chroma langchain_openai
+pip install msgpack
+pip install pymupdf
+pip install sentence-transformers
+pip install -U langchain-community
