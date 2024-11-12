@@ -23,7 +23,7 @@ vectorEmbedding = index.vectorEmbedding
 PORT = 8001  # or any port you prefer
 
 # Configuration for embedding processor
-API_KEY = "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"
+API_KEY = "sk-proj-LsiMW7naIQGLpzsfvkcmT3BlbkFJMpyDM3ZHKapKke9sBrez"
 CONNECTION_STRING="postgres://tsdbadmin:dg7ehmx8wl7ahrwt@ufsai5bzli.ca1khab64u.tsdb.cloud.timescale.com:37119/tsdb?sslmode=require"
 
 
@@ -56,13 +56,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.on_event("startup")
-def startup_event():
-    ve_instance.connectdb()
-
-@app.on_event("shutdown")
-def shutdown_event():
-    ve_instance.close()
 
 @app.get("/")
 def health_check():
@@ -82,78 +75,15 @@ def health_check():
 
 # @app.post("")
 
-@app.post("/bot/loadlistings")
-async def load_listings():
-    try:
-        sql_agent.create_listings_table()
-        res = sql_agent.load_data()
-        return res  
-    except Exception as e:
-        print("Error", e)
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
-
-@app.post("/bot/conversation")
-async def conversation(user: UserInfo):
-    print(f"Received request: {user.user_query}")
-    try:
-        generator = reponseGenerate.realestate_response(user.user_query)
-        return StreamingResponse(generator, media_type="text/event-stream")
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
-
-@app.post("/vectorEmbedding/loadPDFS")
-async def loadPDFs():
-    print("Loading PDFs")
-    try:
-        data = ve_instance.load_pdfs_from_directory()
-        return  data
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
-# use to load embeddings in db
-@app.post("/vectorEmbedding/connectdb")
-async def connectDb():
-    try:
-          connection = ve_instance.connect_and_create()
-          return connection
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
-@app.get("/vectorEmbedding/total_records")
-async def total_records():
-    try:
-        records = ve_instance.total_records()
-        return records
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
 @app.post("/bot/conversation/v4")
 async def queryInput(user:UserInfo):
     try:
 
-        sqlResponse = sql_agent.create_db_instance(user.user_query)
-        response = ve_instance.process_input_with_retrieval(user.user_query, sqlResponse)
+        # sqlResponse = sql_agent.create_db_instance(user.user_query)
+        response = ve_instance.process_input_with_retrieval(user.user_query)
         return StreamingResponse(response, media_type="text/event-stream")
         # return response
     except Exception as e:
         print(f"Error occurred: {e}")
         return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
     
-@app.post("/bot/conversation/v5")
-async def userQuery(user:UserInfo):
-    try:
-        prequery = await ve_instance.pre_userquery_and_response(user.user_query, user.lastThree)
-        print(prequery)
-        sqlResponse = sql_agent.create_db_instance(prequery)
-        response = ve_instance.process_input_with_retrieval(prequery, sqlResponse)
-        return StreamingResponse(response, media_type="text/event-stream")
-        # return prequery
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {"error_message": e}

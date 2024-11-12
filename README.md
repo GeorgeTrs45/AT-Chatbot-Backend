@@ -5,7 +5,6 @@ python3 --version(use 3.9)
 python3 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
-pip install psycopg2
 uvicorn app:app --reload
 
 ##Issue faced:##
