@@ -1,89 +1,44 @@
 from pydantic import BaseModel
+from response_generator import CHAT 
 from fastapi.responses import StreamingResponse 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException 
 from fastapi.middleware.cors import CORSMiddleware 
-from response_generator import ResponseGenerator 
-from sqlAgent import SQLAgent
-import os 
-import importlib.metadata
-import importlib.util
-from typing import List
+import uvicorn 
 
-directory_path = os.path.join(os.path.dirname(__file__), 'vectorEmbedding')
-module_path = os.path.join(directory_path, 'index.py')
+# Hardcoded configuration values
+PORT = 8000  # or any port you prefer
 
-# Load the module
-spec = importlib.util.spec_from_file_location('index', module_path)
-index = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(index)
+# Chat class initialization with API key
+OPENAI_API_KEY = 'sk-proj-LsiMW7naIQGLpzsfvkcmT3BlbkFJMpyDM3ZHKapKke9sBrez'  # Replace with your OpenAI API key
+chat = CHAT(OPENAI_API_KEY)
 
-# Import the vectorEmbedding class from the loaded module
-vectorEmbedding = index.vectorEmbedding
-
-PORT = 8001  # or any port you prefer
-
-# Configuration for embedding processor
-API_KEY = "sk-proj-LsiMW7naIQGLpzsfvkcmT3BlbkFJMpyDM3ZHKapKke9sBrez"
-CONNECTION_STRING="postgres://tsdbadmin:dg7ehmx8wl7ahrwt@ufsai5bzli.ca1khab64u.tsdb.cloud.timescale.com:37119/tsdb?sslmode=require"
-
-
-reponseGenerate = ResponseGenerator(API_KEY)
-sql_agent = SQLAgent(API_KEY, CONNECTION_STRING)
-pdfs_path="files/pdfs"
-ve_instance = vectorEmbedding(API_KEY, CONNECTION_STRING, pdfs_path)
-
-class Message(BaseModel):
-    user: str
-    bot: str
-
-# Main UserInfo class
 class UserInfo(BaseModel):
-    user_query: str  # String type variable
-    lastThree: List[Message]  # Array of Message objects
-
-class QueryModel(BaseModel):
     user_query: str
-    top_k:int=5
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://chatlistings-adamvenords-projects.vercel.app", "http://localhost:3000", "*"],
-    # allow_origins=["*"],
-
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-@app.get("/")
-def health_check():
+@app.post("/bot/conversation")
+async def conversation(user: UserInfo):
+    print(f"Received request: {user.user_query}")
     try:
-        print("Request received")
-        # res = sql_agent.create_db_instance()
-        # return res
-         
-        # Handle the streamed response
-        # print(response)
-        return {
-            "message":"Server is Up"
-        }
-    except Exception as e:
-        print("Error", e)
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-
-# @app.post("")
-
-@app.post("/bot/conversation/v4")
-async def queryInput(user:UserInfo):
-    try:
-
-        # sqlResponse = sql_agent.create_db_instance(user.user_query)
-        response = ve_instance.process_input_with_retrieval(user.user_query)
-        return StreamingResponse(response, media_type="text/event-stream")
-        # return response
+        generator = chat.data_response(user.user_query)
+        # response = ""
+        # async for token in generator:
+        #     response += token
+        #     print("Response..", response)
+        return StreamingResponse(generator, media_type="text/event-stream")
+        # return {"response": response}
     except Exception as e:
         print(f"Error occurred: {e}")
-        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at help@realestate.yodata.me"}
-    
+        return {"error_message": f"Due to some technical issue, I can't help you right now. Sorry for the inconvenience. You can reach us at https://www.abelsontaylor.com/contact-us/"}
+
+if __name__ == '__main__':
+    print(f"Starting server on port {PORT}")
+    uvicorn.run(app, host="0.0.0.0", port=PORT)

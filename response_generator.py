@@ -19,7 +19,7 @@ class ResponseGenerator:
         with open(file_path, 'r') as file:
             data = json.load(file)
             return data
-    async def realestate_response(self, text: str) -> AsyncIterable[str]:
+    async def data_response(self, text: str) -> AsyncIterable[str]:
         callback = AsyncIteratorCallbackHandler()
         # json_data = self.read_data_from_file('promptdataset.json')
         analysis_prompt = f"User query: {text}"
