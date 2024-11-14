@@ -30,7 +30,7 @@ class ResponseGenerator:
         ]
         
         chat_openai = ChatOpenAI(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             temperature=1.0,
             openai_api_key=self.openai_key,
             streaming=True,

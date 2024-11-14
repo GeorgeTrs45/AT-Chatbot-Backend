@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from response_generator import CHAT 
+from response_generator import ResponseGenerator 
 from fastapi.responses import StreamingResponse 
 from fastapi import FastAPI, HTTPException 
 from fastapi.middleware.cors import CORSMiddleware 
@@ -10,7 +10,7 @@ PORT = 8000  # or any port you prefer
 
 # Chat class initialization with API key
 OPENAI_API_KEY = 'sk-proj-LsiMW7naIQGLpzsfvkcmT3BlbkFJMpyDM3ZHKapKke9sBrez'  # Replace with your OpenAI API key
-chat = CHAT(OPENAI_API_KEY)
+chat = ResponseGenerator(OPENAI_API_KEY)
 
 class UserInfo(BaseModel):
     user_query: str
