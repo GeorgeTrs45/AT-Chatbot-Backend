@@ -9,7 +9,7 @@ import uvicorn
 PORT = 8000  # or any port you prefer
 
 # Chat class initialization with API key
-OPENAI_API_KEY = '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'  # Replace with your OpenAI API key
+OPENAI_API_KEY = 'sk-proj-LsiMW7naIQGLpzsfvkcmT3BlbkFJMpyDM3ZHKapKke9sBrez'  # Replace with your OpenAI API key
 chat = ResponseGenerator(OPENAI_API_KEY)
 
 class UserInfo(BaseModel):
