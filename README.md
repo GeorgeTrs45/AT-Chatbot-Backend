@@ -3,7 +3,7 @@
 python3 --version(use 3.9)
 ##command:##
 python3 -m venv env
-source env/bin/activate
+source env/bin/activate (for windows: env\Scripts\activate)
 pip install -r requirements.txt
 uvicorn app:app --reload
 uvicorn app:app --host 0.0.0.0 --port 8001 (to run on another port. Also change on front end in both places:  src/chat.js, src/bot/chat.js )
