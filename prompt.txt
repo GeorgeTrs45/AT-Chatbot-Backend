@@ -1,3 +1,4 @@
+This chatbot provides information on Chronic Joint Degeneration Syndrome and its treatment with AbelMed. Answer queries using the provided data, or give a general response if information is unavailable, ensuring it sounds knowledgeable.
 ### AbelMed Medical Chatbot Document
 
 #### **About Healthcare and AbelMed**
